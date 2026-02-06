@@ -73,6 +73,9 @@ class SimpleRNNClassifierTorch(BaseDeepClassifierPytorch):
         The keyword arguments to be passed to the callbacks.
     lr : float, default = 0.001
         The learning rate to use for the optimizer.
+    device : str, default = "cpu"
+        The device to use for training and inference.
+        Options include ``"cpu"``, ``"cuda"``, ``"mps"``.
     verbose : bool, default = False
         Whether to print progress information during training.
     random_state : int, default = 0
@@ -122,6 +125,7 @@ class SimpleRNNClassifierTorch(BaseDeepClassifierPytorch):
         criterion_kwargs: dict | None = None,
         callback_kwargs: dict | None = None,
         lr: float = 0.001,
+        device: str = "cpu",
         verbose: bool = False,
         random_state: int = 0,
     ):
@@ -147,6 +151,7 @@ class SimpleRNNClassifierTorch(BaseDeepClassifierPytorch):
         self.callbacks = callbacks
         self.callback_kwargs = callback_kwargs
         self.lr = lr
+        self.device = device
         self.verbose = verbose
         self.random_state = random_state
 
@@ -166,6 +171,7 @@ class SimpleRNNClassifierTorch(BaseDeepClassifierPytorch):
             callbacks=self.callbacks,
             callback_kwargs=self.callback_kwargs,
             lr=self.lr,
+            device=self.device,
             verbose=self.verbose,
             random_state=self.random_state,
         )

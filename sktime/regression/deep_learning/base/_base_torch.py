@@ -53,6 +53,12 @@ class BaseDeepRegressorTorch(BaseRegressor):
         The keyword arguments to be passed to the callbacks.
     lr : float, default = 0.001
         The learning rate to be used in the optimizer.
+    device : str, default = "cpu"
+        The device to use for training and inference. Options include
+        ``"cpu"``, ``"cuda"``, ``"mps"`` or any valid PyTorch device string.
+        If ``"cuda"`` is specified but not available, a warning is raised
+        and the model falls back to ``"cpu"``.
+        Similarly for ``"mps"``.
     verbose : bool, default = True
         Whether to output extra information.
     random_state : int or None, default = None
@@ -82,6 +88,7 @@ class BaseDeepRegressorTorch(BaseRegressor):
         callbacks: None | str | tuple[str, ...] = None,
         callback_kwargs: dict | None = None,
         lr: float = 0.001,
+        device: str = "cpu",
         verbose: bool = True,
         random_state: int | None = None,
     ):
@@ -94,10 +101,14 @@ class BaseDeepRegressorTorch(BaseRegressor):
         self.callbacks = callbacks
         self.callback_kwargs = callback_kwargs
         self.lr = lr
+        self.device = device
         self.verbose = verbose
         self.random_state = random_state
 
         super().__init__()
+
+        # resolve the device
+        self._device = self._get_device(self.device)
 
         # set random seed for torch
         if self.random_state is not None:
@@ -111,11 +122,50 @@ class BaseDeepRegressorTorch(BaseRegressor):
         self._all_criterions = None
         self._all_callbacks = None
 
+    def _get_device(self, device):
+        """Resolve the device string to a ``torch.device``.
+
+        Falls back to ``"cpu"`` when the requested device is unavailable.
+
+        Parameters
+        ----------
+        device : str
+            Device string, e.g. ``"cpu"``, ``"cuda"``, ``"mps"``.
+
+        Returns
+        -------
+        torch.device
+            Resolved device.
+        """
+        import warnings
+
+        torch = _safe_import("torch")
+
+        if device == "cuda" and not torch.cuda.is_available():
+            warnings.warn(
+                "CUDA is not available, falling back to CPU.",
+                UserWarning,
+                stacklevel=2,
+            )
+            device = "cpu"
+        if device == "mps":
+            if not hasattr(torch.backends, "mps") or not torch.backends.mps.is_available():
+                warnings.warn(
+                    "MPS is not available, falling back to CPU.",
+                    UserWarning,
+                    stacklevel=2,
+                )
+                device = "cpu"
+        return torch.device(device)
+
     def _fit(self, X, y):
         self.network = self._build_network(X)
+        # move network and criterion to the target device
+        self.network.to(self._device)
 
         # instantiate loss function and optimizer
         self._criterion = self._instantiate_criterion()
+        self._criterion.to(self._device)
         self._optimizer = self._instantiate_optimizer()
         # instantiate callbacks (learning rate schedulers)
         self._schedulers = self._instantiate_schedulers()
@@ -129,6 +179,8 @@ class BaseDeepRegressorTorch(BaseRegressor):
     def _run_epoch(self, epoch, dataloader):
         losses = []
         for inputs, outputs in dataloader:
+            inputs = {k: v.to(self._device) for k, v in inputs.items()}
+            outputs = outputs.to(self._device)
             y_pred = self.network(**inputs)
             loss = self._criterion(y_pred, outputs)
             self._optimizer.zero_grad()
@@ -386,7 +438,8 @@ class BaseDeepRegressorTorch(BaseRegressor):
         # disable gradient calculation for inference
         with torchNo_grad():
             for inputs in dataloader:
-                y_pred.append(self.network(**inputs).detach())
+                inputs = {k: v.to(self._device) for k, v in inputs.items()}
+                y_pred.append(self.network(**inputs).detach().cpu())
         y_pred = cat(y_pred, dim=0)
         y_pred = y_pred.numpy()
 

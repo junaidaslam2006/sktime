@@ -45,6 +45,9 @@ class GRUClassifier(BaseDeepClassifierPytorch):
         Additional keyword arguments to pass to the optimizer.
     lr : float, optional (default=0.001)
         The learning rate to use for the optimizer.
+    device : str, optional (default="cpu")
+        The device to use for training and inference.
+        Options include ``"cpu"``, ``"cuda"``, ``"mps"``.
     verbose : bool, optional (default=False)
         Whether to print progress information during training.
     random_state : int, optional (default=None)
@@ -97,6 +100,7 @@ class GRUClassifier(BaseDeepClassifierPytorch):
         criterion_kwargs: dict = None,
         optimizer_kwargs: dict = None,
         lr: float = 0.001,
+        device: str = "cpu",
         verbose: bool = False,
         random_state: int = None,
     ):
@@ -115,6 +119,7 @@ class GRUClassifier(BaseDeepClassifierPytorch):
         self.optimizer = optimizer
         self.optimizer_kwargs = optimizer_kwargs
         self.lr = lr
+        self.device = device
         self.verbose = verbose
         self.random_state = random_state
 
@@ -130,6 +135,7 @@ class GRUClassifier(BaseDeepClassifierPytorch):
             criterion_kwargs=criterion_kwargs,
             optimizer_kwargs=optimizer_kwargs,
             lr=lr,
+            device=device,
             verbose=verbose,
             random_state=random_state,
         )
@@ -260,6 +266,9 @@ class GRUFCNNClassifier(BaseDeepClassifierPytorch):
         Additional keyword arguments to pass to the optimizer.
     lr : float, optional (default=0.001)
         The learning rate to use for the optimizer.
+    device : str, optional (default="cpu")
+        The device to use for training and inference.
+        Options include ``"cpu"``, ``"cuda"``, ``"mps"``.
     verbose : bool, optional (default=False)
         Whether to print progress information during training.
     random_state : int, optional (default=None)
@@ -313,6 +322,7 @@ class GRUFCNNClassifier(BaseDeepClassifierPytorch):
         criterion_kwargs: dict = None,
         optimizer_kwargs: dict = None,
         lr: float = 0.01,
+        device: str = "cpu",
         verbose: bool = False,
         random_state: int = None,
     ):
@@ -333,6 +343,7 @@ class GRUFCNNClassifier(BaseDeepClassifierPytorch):
         self.optimizer = optimizer
         self.optimizer_kwargs = {"betas": (0.9, 0.999)} if optimizer == "Adam" else {}
         self.lr = lr
+        self.device = device
         self.verbose = verbose
         self.random_state = random_state
 
@@ -348,6 +359,7 @@ class GRUFCNNClassifier(BaseDeepClassifierPytorch):
             criterion_kwargs=criterion_kwargs,
             optimizer_kwargs=optimizer_kwargs,
             lr=lr,
+            device=device,
             verbose=verbose,
             random_state=random_state,
         )

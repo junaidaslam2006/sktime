@@ -60,6 +60,9 @@ class MVTSTransformerClassifier(BaseDeepClassifierPytorch):
         Additional keyword arguments to pass to the optimizer.
     lr : float, optional (default=0.001)
         The learning rate for the optimizer.
+    device : str, optional (default="cpu")
+        The device to use for training and inference.
+        Options include ``"cpu"``, ``"cuda"``, ``"mps"``.
     verbose : bool, optional (default=True)
         If True, prints progress messages during training.
     random_state : int or None, optional (default=None)
@@ -108,6 +111,7 @@ class MVTSTransformerClassifier(BaseDeepClassifierPytorch):
         optimizer=None,
         optimizer_kwargs=None,
         lr=0.001,
+        device="cpu",
         verbose=True,
         random_state=None,
     ):
@@ -127,6 +131,7 @@ class MVTSTransformerClassifier(BaseDeepClassifierPytorch):
         self.optimizer = optimizer
         self.optimizer_kwargs = optimizer_kwargs
         self.lr = lr
+        self.device = device
         self.verbose = verbose
         self.random_state = random_state
 
@@ -143,6 +148,7 @@ class MVTSTransformerClassifier(BaseDeepClassifierPytorch):
             optimizer=optimizer,
             optimizer_kwargs=optimizer_kwargs,
             lr=lr,
+            device=device,
             verbose=verbose,
             random_state=random_state,
         )

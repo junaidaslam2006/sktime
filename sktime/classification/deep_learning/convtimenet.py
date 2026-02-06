@@ -153,6 +153,7 @@ class ConvTimeNetClassifier(BaseDeepClassifierPytorch):
             optimizer=optimizer,
             optimizer_kwargs=optimizer_kwargs,
             lr=lr,
+            device=device,
             verbose=verbose,
             random_state=random_state,
         )
